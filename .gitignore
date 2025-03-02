@@ -1,5 +1,5 @@
 *.keras
 venv
 *.npy
-gpt*
+gpt2_*
 hinglish_tokenizer
