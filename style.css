@@ -1,0 +1,265 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main { 
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  height: 100vh;
+  background-color: #ecf0f1;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+ 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #BBBBC6;
+  border-radius: 14px;
+ 
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffffff;
+ 
+}
+
+::-webkit-scrollbar-track {
+  background: none;
+
+}
+
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+
+.leftpane,
+.main {
+  height: 100%;
+}
+
+#sidebar {
+  width: 260px;
+  transition: width 0.3s ease
+}
+
+.maintext {
+  position: relative;
+  color: hsl(0, 0%, 68%);
+  font-weight: bold;
+  font-family: "Prompt", serif !important;
+  font-style: italic;
+  letter-spacing: 3px;
+  overflow: hidden;
+  border-right: 2px solid hsl(0, 0%, 80%);
+  white-space: nowrap;
+  animation: typewriter 2s steps(20) 1s 1 normal both,
+    blinkTextCursor 500ms infinite;
+}
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 5em;
+  }
+}
+
+@keyframes blinkTextCursor {
+  from {
+    border-right-color: hsl(0, 0%, 80%);
+  }
+
+  to {
+    border-right-color: transparent;
+  }
+}
+ 
+ #tryNowBtn {
+    background-color: #6f00ff ; 
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+ 
+    transition: all 0.3s ease;
+  }
+
+  #tryNowBtn:hover {
+    transform: scale(1.1); 
+  }
+
+  #tryNowBtn:focus {
+    outline: none; 
+  }
+
+  .carousel-container {
+    width: 100%;
+    height: 150px; /* Set a fixed height to contain the carousel */
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    
+  }
+
+  .carousel-content {
+    display: inline-flex;
+    animation: slide 20s linear infinite; /* Faster and continuous loop */
+  }
+
+  .carousel-item {
+    padding: 20px 30px;
+    font-size: 1rem;
+    height: 100px; /* Explicit height to ensure the items are visible */
+    background-color: hsl(0, 0%, 21%);
+    border-radius: 12px;
+    margin-right: 15px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @keyframes slide {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%); /* Move the carousel items fully to the left */
+    }
+  }
+
+  
+  
+.btn:hover {
+  background-color: white !important; 
+  color: black !important; 
+  border-color: white !important; 
+}
+
+
+.btn:hover svg path {
+  fill: black !important; 
+}
+
+
+.leftpane {
+  background-color: #000000;
+  min-width: 250px;
+}
+
+.main {
+  background-color: #16161a;
+  position: relative;
+}
+
+.mid-navbar {
+  border-bottom: solid 1px;
+  border-color: hsla(0, 0%, 100%, .2);
+}
+
+.tip {
+  background-color: #343541;
+}
+
+.tip:hover {
+  background-color: #40414F;
+}
+
+#sidebarbtnopen:hover {
+  background-color: #40414F !important;
+}
+
+.chat {
+  border-radius: 6px;
+  transition: background 0.3s ease-in-out;
+}
+
+.chat:hover {
+  background: #40414F !important;
+}
+
+.items {
+  transition: background 0.3s ease-in-out;
+}
+
+.items:hover {
+  background: #40414F !important;
+}
+
+
+#userinfo {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+#send_query {
+  resize: none;
+  max-height: 200px;
+  height: auto;
+  min-height: 30px;
+  font-weight: 400;
+  color: white;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#send_query::placeholder {
+  color: white;
+  opacity: 0.5;
+}
+
+#send_query:focus {
+  outline: none;
+}
+@media (max-width: 991px) {
+  .text-container {
+    padding-bottom: 50px !important; /* Creates space */
+  }
+}
+
+
+
+.selected {
+  background-color: white; /* Change to your desired color */
+  color: black; /* Change to your desired color */
+}
+
+.model-btn.selected {
+  background-color: #6f00ff; /* Change to your preferred color */
+  color: white; /* Change to your preferred color */
+  border-color: #6f00ff !important; /* Change to your preferred color */
+}
+
+/*image sizing*/
+
+.image-container {
+  height: 50vh;
+}
+.img-custom {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.border-box {
+  border: 2px solid black; /* Border color and thickness */
+  border-radius: 15px; /* Rounded corners */
+  padding: 20px;
+  text-align: center;
+}

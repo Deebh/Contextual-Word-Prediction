@@ -1,0 +1,363 @@
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Word Prediction</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center">Next Word Prediction</h2>
+        <div class="card p-4 shadow-sm">
+            <div class="mb-3">
+                <label class="form-label">Select Model:</label>
+                <select class="form-select" id="model-select">
+                    <option value="lstm">LSTM</option>
+                    <option value="bilstm">BiLSTM</option>
+                    <option value="gru">GRU</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Enter Text:</label>
+                <input type="text" class="form-control" id="input-phrase" placeholder="Type a sentence..." required>
+            </div>
+
+            <button id="predict-btn" class="btn btn-primary w-100">Predict Next Words</button>
+
+            <h5 class="mt-3">Predictions:</h5>
+            <p id="output" class="fw-bold"></p>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+-->
+
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <title>TextCue</title>
+    <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA8k6iAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEAAAAAAAABERAAAAAAABEREQAAAAABEREREAAAABERERERAAABEREREREQABEREREREREAEREREREREQARERERERERABEREQAREREAAREQAAEREAAAEQAAABEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/PwAA/h8AAPwPAAD4BwAA8AMAAOABAADAAAAAwAAAAMAAAADAwAAA4eEAAPPzAAD//wAA//8AAP//AAD//wAA" rel="icon" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">  <!-- Correct path to CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  </head>
+
+<body>
+  <div class="container-fluid position-relative d-flex g-0 w-100 h-100 sidebar">
+    <button id="sidebarbtnopen" class="position-absolute border-0 bg-transparent d-md-none d-none z-3 p-2 m-2"
+      style="color: white;top: 2px; left: 2px;border-radius: 4px;">
+      <span class="">
+        <svg stroke="white" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+          stroke-linejoin="round" class="icon-sm text-black dark:text-white" height="1em" width="1em"
+          xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </span>
+    </button>
+    <button id="sidebarbtnclosemobile" class="btn btn-close position-absolute d-none border border-3"
+      style="top:10px; left: 265px;z-index: 999999; "></button>
+    <div id="sidebar" class="leftpane p-2">
+      <div class="position-relative h-100">
+        <div class="d-flex w-100 align-items-center justify-content-start">
+          <a href="#" class="text-decoration-none me-2 py-2 d-flex flex-grow-1"
+            style="border-radius: 6px; color: white; font-size: 1.5rem; padding-left: 24px;">
+
+            <b> TextCue</b>
+          </a>
+          <a href="#" id="sidebarbtnclose" class="text-decoration-none border border-1 py-2 flex-grow-0"
+            style="border-radius: 6px;padding: 0 12px;">
+            <span style="color: white;">
+              <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                stroke-linejoin="round" class="icon-sm" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+              </svg>
+            </span>
+          </a>
+        </div>
+        <div class="d-flex flex-column w-100 h-100" style="overflow-x: hidden;overflow-y: auto;padding-left: 15px;">
+
+          <div class="w-100 d-flex p-2 chat">
+            <span
+              style="max-height: 1.25rem; font-size: .875rem; font-weight: 500; text-align: justify; text-justify: inter-word;padding-right: 15px; padding-bottom: 250px;">
+              A next-word prediction tool designed to enhance your typing experience. <br><br> TextCue intelligently makes your typing
+              faster and more efficient. With support for Hinglish and English, it adapts to your writing style,
+              ensuring smooth and accurate predictions every time.
+            </span>
+          </div>
+
+          <span
+            style="max-height: 1.25rem; font-size: .875rem; font-weight: 500; text-align: justify; text-justify: inter-word;padding-right: 15px;">
+
+            💡 Why TextCue? <br><br>
+            ✅ Boosts Speed – <br>Type faster with intelligent word suggestions.<br>
+            ✅ Reduces Errors – <br>These word predictions improve accuracy.<br>
+            ✅ Enhances Productivity – <br>Write effortlessly with minimal effort.<br>
+          </span>
+        </div>
+
+        <div id="userinfo" class="mb-2 px-2 d-flex flex-column w-100 border-top border-1">
+          <a href="#" class="items mt-2 w-100 text-decoration-none px-2 py-2" style="border-radius: 6px;">
+
+            <span class="" style="color: white; font-weight: 500; font-size: 1rem;">
+              Version: TextCue v1.0
+            </span>
+          </a>
+
+          <a href="#" class="items mt-2 w-100 text-decoration-none px-2 py-2" style="border-radius: 6px;">
+
+            <span class="" style="color: white; font-weight: 500; font-size: 1rem;">
+              Supported Languages: English, Hinglish
+            </span>
+          </a>
+        </div>
+        <div id="userinfo" class="mb-2 px-2 d-flex flex-column w-100 border-top border-1">
+          <a href="#" class="items mt-2 w-100 text-decoration-none px-2 py-2" style="border-radius: 6px;">
+
+            <span class="" style="color: white; font-weight: 500; font-size: 1rem;">
+              Version: TextCue v1.0
+            </span>
+          </a>
+
+          <a href="#" class="items mt-2 w-100 text-decoration-none px-2 py-2" style="border-radius: 6px;">
+
+            <span class="" style="color: white; font-weight: 500; font-size: 1rem;">
+              Supported Languages: English, Hinglish
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="main col" style="min-width: 100px;">
+      <div class="d-md-none d-flex sticky-top mid-navbar p-2 g-md-0">
+        <div id="sidebarbtnmobile" class="ms-2 mt-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-list"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z">
+            </path>
+          </svg>
+        </div>
+        
+      </div>
+      <div class="mt-md-4 my-2 mx-2 col d-flex justify-content-center content" style="height: 50px;">
+        <div class="p-1 bg-dark text-white d-flex col-12 col-sm-4 col-md-5 col-lg-3" style=" border-radius: 7px;">
+          <div class="d-flex align-items-center justify-content-center rounded w-100 px-5"
+            style="background-color: #ffffff; border: solid 1px rgba(78,79,96,1)!important;cursor: pointer;">
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none"
+                class="icon-sm transition-colors text-brand-green" width="20" height="20">
+                <path
+                  d="M9.586 1.526A.6.6 0 0 0 8.553 1l-6.8 7.6a.6.6 0 0 0 .447 1h5.258l-1.044 4.874A.6.6 0 0 0 7.447 15l6.8-7.6a.6.6 0 0 0-.447-1H8.542l1.044-4.874Z"
+                  fill="black"></path>
+              </svg></span>
+            <span class="ms-2 fw-bold text-nowrap" style="color: black;">NEXT WORD PREDICTOR</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 p-1 col d-flex  w-100 justify-content-center align-items-center ">
+        <h1 class="text-nowrap text-center maintext"
+          style="color: rgb(255, 255, 255);font-weight: bolder; font-size:5rem;">
+          TextCue
+        </h1>
+      </div>
+        <p class="text-white fs-5  col d-flex  w-100 justify-content-center align-items-center ">Your next word, queued up!</p>
+
+      <br>
+      <div class="d-flex justify-content-center align-items-center w-100" style="margin-bottom: 50px;">
+        <button id="tryNowBtn" class="btn px-3 py-2 btn-arrow">
+          Start now
+          <i class="bi bi-arrow-right-circle"></i> 
+        </button>
+      </div>
+
+      <div class="carousel-container">
+        <div class="carousel-content">
+          <span class="carousel-item">
+            Haan, Deepika. I can't wait for our first date.   
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Mujhe lagta hai hum bahut achhe friends ban sakte hai.
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Awesome! Main bhi ek painting class mein hoon.
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Kya baat hai, batao mujhe bhi.
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Hey Pooja! How's your day going?
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <!-- Duplicated items for seamless infinite loop effect -->
+          <span class="carousel-item">
+            Haan, Deepika. I can't wait for our first date.   
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Mujhe lagta hai hum bahut achhe friends ban sakte hai.
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Awesome! Main bhi ek painting class mein hoon.
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Kya baat hai, batao mujhe bhi.
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>
+          <span class="carousel-item">
+            Hey Pooja! How's your day going?
+            <span class="arrow-circle">&nbsp;<i class="fa-solid fa-angles-right"></i></span>
+          </span>   
+        </div>
+      </div>
+      
+      <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="padding-bottom: 50px; padding-top: 20px;">
+        <div class="d-flex w-100 align-content-center justify-content-center ">
+          <span class="px-2 text-center" style="color: rgb(255, 255, 255);font-weight: bolder; font-size:2.5rem;font-family: Prompt, serif !important;">
+            SELECT A MODEL <i class="bi bi-database-fill-down"></i>
+          </span>
+        </div>
+      </div>  
+       
+      <div class="d-flex justify-content-center align-items-center w-100" style="margin-bottom: 60px;">
+        <button id="lstmBtn" class="btn px-3 py-2 btn-arrow model-btn" style="border-color: white; margin-right: 20px; font-weight: bold;font-size: large;">
+            LSTM <i class="bi bi-arrow-right-circle"></i>
+        </button>
+        <button id="bilstmBtn" class="btn px-3 py-2 btn-arrow model-btn" style="border-color: white; margin-right: 20px; font-weight: bold;font-size: large;">
+            BiLSTM <i class="bi bi-arrow-right-circle"></i>
+        </button>
+        <button id="gruBtn" class="btn px-3 py-2 btn-arrow model-btn" style="border-color: white; margin-right: 20px; font-weight: bold;font-size: large;">
+            GRU <i class="bi bi-arrow-right-circle"></i>
+        </button>
+    </div>
+    <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="padding-bottom: 5px;">
+        <div class="d-flex w-100 align-content-center justify-content-center ">
+          <span class="px-2 text-center" style="font-size: 0.9rem; font-weight: bold; ">
+            🟣LSTM IS THE DEFAULT MODEL.
+          </span>
+        </div>
+  </div>
+
+      <div class="d-flex justify-content-center align-items-center w-100 border-top border-1 input-container">
+        <div class="position-relative d-flex my-2 mx-2 py-md-2 w-100 px-2 py-1 pt-2"
+          style="border-radius: 14px; border: solid 1px rgba(78,79,96,1); background-color: #40414F; max-width: 750px;">
+          <textarea
+          class="w-100 my-1 bg-transparent border-0"
+          name="send_prompt"
+          id="send_query"
+          tabindex="0"
+          rows="1"
+          placeholder="Write a message..."
+          style="resize: none; overflow: hidden;" <!-- Disable manual resizing --></textarea>
+<button type="button" class="btn border-2 border-white align-self-end bg-transparent" title="send" id="send">
+    <span class="px-2 py-1">
+        <svg style="vertical-align: middle; width: 20px; height: 20px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" class="icon-sm m-1 md:m-0">
+            <path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="white"></path>
+        </svg>
+    </span>
+</button>
+        </div>
+      </div>
+      
+      <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="padding-bottom: 50px;">
+            <div class="d-flex w-100 align-content-center justify-content-center ">
+              <span class="px-2 text-center" style="font-size: 0.75rem; ">
+                📍TextCue is currently in beta and continuously learning to improve word predictions. Predictions may
+                vary based on context and input.
+              </span>
+            </div>
+      </div>
+
+    <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="padding-bottom: 50px; padding-top: 50px;">
+        <div class="d-flex w-100 align-content-center justify-content-center ">
+          <span class="px-2 text-center" style="color: rgb(255, 255, 255);font-weight: bolder; font-size:2.5rem;font-family: Prompt, serif !important;">
+            PREDICTED NEXT WORDS <i class="bi bi-graph-up-arrow"></i>
+          </span>
+        </div>
+      </div>  
+
+      <div class="d-flex justify-content-center align-items-center w-100" style="margin-bottom: 50px;">
+        <button id="word1Btn" class="btn px-3 py-2 btn-arrow model-btn" style="border-color: white; margin-right: 20px; font-weight: bold; font-size: large;">
+            WORD 1 <i class="bi bi-check2-square"></i>
+        </button>
+        <button id="word2Btn" class="btn px-3 py-2 btn-arrow model-btn" style="border-color: white; margin-right: 20px; font-weight: bold; font-size: large;">
+            WORD 2 <i class="bi bi-check2-square"></i>
+        </button>
+        <button id="word3Btn" class="btn px-3 py-2 btn-arrow model-btn" style="border-color: white; margin-right: 20px; font-weight: bold; font-size: large;">
+            WORD 3 <i class="bi bi-check2-square"></i>
+        </button>
+    </div>
+
+    <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="padding-bottom: 50px; padding-top: 50px;">
+        <div class="d-flex w-100 align-content-center justify-content-center ">
+          <span class="px-2 text-center" style="color: rgb(255, 255, 255);font-weight: bolder; font-size:2.5rem;font-family: Prompt, serif !important; margin-bottom: 50px;">
+            MODEL COMPARISON <i class="bi bi-search"></i>
+          </span>
+        </div>
+      </div>  
+      <div class="d-flex justify-content-center align-items-center image-container" style="margin-bottom: 50px;">
+        <img src="{{ url_for('static', filename='model_comparison.png') }}" alt="model comparison" class="img-fluid img-custom">
+    </div>
+
+    <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="padding-top: 50px;">
+      <div class="d-flex w-100 align-content-center justify-content-center ">
+        <span class="px-2 text-center" style="color: rgb(255, 255, 255);font-weight: bolder; font-size:2.5rem;font-family: Prompt, serif !important;">
+          INSIGHTS INTO DATASET ANALYSIS <i class="bi bi-bar-chart"></i></i>
+        </span>
+      </div>
+    </div>
+    <div class="d-flex mb-4 px-md-4 justify-content-center w-100 flex-column text-container pb-2" style="margin-bottom: 100px;">
+      <div class="d-flex w-100 align-content-center justify-content-center " style="margin-top: 60px;">
+        <div class="d-flex justify-content-center align-items-center image-container" style="margin-bottom: 100px;">
+          <img src="{{ url_for('static', filename='output.png') }}" alt="model comparison" class="img-fluid img-custom">
+        
+        </div>
+    </div>
+      <div class="d-flex w-100 align-content-center justify-content-center border-box" style="margin-top: 60px; border-color: white;margin-bottom: 40px;">
+          <span class="px-2 text-center" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">
+              <i class="bi bi-arrow-down-right-circle" style="font-size: 4rem; "></i><br> Total number of unique words in the dataset:  9421
+          </span>
+      </div>
+
+      <div class="d-flex w-100 align-content-center justify-content-center border-box" style="margin-top: 60px; border-color: white;">
+          <span class="px-2 text-center" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">
+              <i class="bi bi-arrow-down-right-circle" style="font-size: 4rem;"></i><br> Average sentence length in the dataset:  23.503
+          </span>
+      </div>
+      
+  </div>
+
+</div>
+
+
+
+    </div>
+  </div>
+
+
+ 
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
