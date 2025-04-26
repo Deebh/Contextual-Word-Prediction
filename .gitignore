@@ -3,3 +3,5 @@ venv
 *.npy
 gpt2_*
 hinglish_tokenizer
+temp
+extra_datasets
