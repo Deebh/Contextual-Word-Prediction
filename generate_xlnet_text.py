@@ -1,83 +1,78 @@
+import os
 import torch
-from transformers import XLNetTokenizer, XLNetLMHeadModel, pipeline
+from transformers import XLNetTokenizer, XLNetLMHeadModel, set_seed
 
 
-def generate_text(
-    prompt, model_path="./xlnet-hinglish-final", max_length=100, min_length=10
+def generate_text_manual(
+    prompt: str,
+    model_path: str = "temp/xlnet-hinglish-chunk22",
+    max_new_tokens: int = 100,
+    num_return_sequences: int = 3,
+    top_k: int = 50,
+    top_p: float = 0.9,
+    temperature: float = 0.8,
 ):
-    """
-    Generate text using a fine-tuned XLNet model with better generation parameters.
+    # device & reproducibility
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    set_seed(42)
 
-    Args:
-        prompt (str): The input text to generate from
-        model_path (str): Path to the fine-tuned model
-        max_length (int): Maximum length of generated text
-        min_length (int): Minimum length of generated text
-
-    Returns:
-        list: Generated text sequences
-    """
-    # Set device
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f"Device set to use {device}")
-
-    # Load model and tokenizer
-    try:
-        model = XLNetLMHeadModel.from_pretrained(model_path).to(device)
-        tokenizer = XLNetTokenizer.from_pretrained(model_path)
-        print(f"Model and tokenizer loaded successfully from {model_path}")
-    except Exception as e:
-        print(f"Error loading model: {str(e)}")
-        return None
-
-    # Handle pad token
+    # load model & tokenizer
+    model_path = os.path.abspath(os.path.expanduser(model_path))
+    model = XLNetLMHeadModel.from_pretrained(model_path, local_files_only=True).to(
+        device
+    )
+    tokenizer = XLNetTokenizer.from_pretrained(model_path, local_files_only=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-        print("Set pad_token to eos_token")
 
-    # Create pipeline with specific parameters
-    generator = pipeline(
-        "text-generation",
-        model=model,
-        tokenizer=tokenizer,
-        device=0 if torch.cuda.is_available() else -1,
+    # tokenize
+    inputs = tokenizer(prompt, return_tensors="pt")
+    input_ids = inputs.input_ids.to(device)
+    seq_len = input_ids.size(-1)
+    total_len = seq_len + max_new_tokens
+
+    # build perm_mask: forbid new→future_new
+    perm_mask = torch.zeros((1, total_len, total_len), dtype=torch.float, device=device)
+    perm_mask[:, seq_len:, seq_len:] = 1.0
+
+    # build target_mapping: predict only new token positions
+    target_mapping = torch.zeros(
+        (1, max_new_tokens, total_len), dtype=torch.float, device=device
     )
+    for i in range(max_new_tokens):
+        target_mapping[0, i, seq_len + i] = 1.0
 
-    # Generate text with careful parameters
-    try:
-        print(f"Generating text from prompt: '{prompt}'")
-        output = generator(
-            prompt,
-            max_length=max_length,
-            min_length=min_length,
-            num_return_sequences=3,  # Generate multiple sequences
-            do_sample=True,  # Use sampling
-            top_k=50,  # Sample from top 50 tokens
-            top_p=0.9,  # Nucleus sampling
-            temperature=0.8,  # Higher temperature for more randomness
-            no_repeat_ngram_size=2,  # Avoid repeating 2-grams
-            early_stopping=False,  # Don't stop early
+    # generate
+    with torch.no_grad():
+        outputs = model.generate(
+            input_ids,
+            max_length=total_len,
+            perm_mask=perm_mask,
+            target_mapping=target_mapping,
+            do_sample=True,
+            num_return_sequences=num_return_sequences,
+            top_k=top_k,
+            top_p=top_p,
+            temperature=temperature,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
         )
-        return output
-    except Exception as e:
-        print(f"Error during text generation: {str(e)}")
-        return None
+
+    # decode only the new tokens
+    texts = [
+        tokenizer.decode(output[seq_len:], skip_special_tokens=True)
+        for output in outputs
+    ]
+    return texts
 
 
 if __name__ == "__main__":
-    print("XLNet Hinglish Text Generator")
-    print("----------------------------")
-
+    print("XLNet Hinglish Text Generator (Manual Permutation)")
     while True:
-        user_input = input("\nEnter your prompt (or 'quit' to exit): ")
-        if user_input.lower() in ["quit", "exit", "q"]:
+        prompt = input("Enter prompt (or 'quit' to exit): ")
+        if prompt.lower() in ("quit", "exit", "q"):
             break
-
-        results = generate_text(user_input)
-
-        if results:
-            print("\n=== Generated Text ===")
-            for i, result in enumerate(results):
-                print(f"\nOption {i+1}:")
-                print(result["generated_text"])
-            print("=====================")
+        results = generate_text_manual(prompt)
+        for idx, text in enumerate(results, start=1):
+            print(f"\nOption {idx}:\n{text}")
+        print("\n" + "=" * 40 + "\n")
